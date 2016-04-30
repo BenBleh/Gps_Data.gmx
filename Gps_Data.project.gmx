@@ -29,15 +29,23 @@
   <sprites name="sprites">
     <sprite>sprites\sprite0</sprite>
     <sprite>sprites\sprite1</sprite>
+    <sprite>sprites\sprite2</sprite>
+    <sprite>sprites\sprite3</sprite>
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
   <scripts name="scripts">
     <script>scripts\get_map.gml</script>
     <script>scripts\read_csv.gml</script>
+    <script>scripts\lat_to_y.gml</script>
+    <script>scripts\ds_grid_get_safe.gml</script>
+    <script>scripts\draw_button_simple.gml</script>
   </scripts>
   <objects name="objects">
     <object>objects\control</object>
+    <object>objects\car</object>
+    <object>objects\slider</object>
+    <object>objects\input1</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\room0</room>

@@ -39,6 +39,9 @@ map_center_lat_offset=0;
 map_center_lon_offset=0;
 r = 6371;
 
+cal_1=0.03;
+cal_2=200;
+
 //Google_Map = get_map( string(map_center_lat)+","+string(map_center_lon) , map_zoom , 640 , 640 , "roadmap" );
 //get gps data from csv file
 read_csv("sample.csv");
@@ -50,6 +53,26 @@ mouse_map_offset_x=0;
 mouse_map_offset_y=0;
 mouse_press_x = 0;
 mouse_press_y = 0;
+grab=0;
+
+//time controls
+dis_time=0;
+max_dis_time=60;
+
+//selected car shit
+sel_car_instance = -1;
+sel_car_pos = -1;
+lst_sel_car=-1;
+
+//heat map shit
+hm_width_pixels = 4000;
+hm_height_pixels = 4000;
+hm_x = -1000;
+hm_y = -1000;
+hm_res = 15;
+hm_setup=0;
+hm_grid=ds_grid_create(hm_width_pixels/hm_res,hm_height_pixels/hm_res);
+hm_on=0;
 </string>
           </argument>
         </arguments>
@@ -73,15 +96,24 @@ mouse_press_y = 0;
           <argument>
             <kind>1</kind>
             <string>//map controls
-if mouse_check_button_pressed(mb_left){
-    mouse_press_x = mouse_x;
-    mouse_press_y = mouse_y;
-    mouse_map_offset_x = map_offset_x;
-    mouse_map_offset_y = map_offset_y;
+if(grab=0){
+    if mouse_check_button_pressed(mb_left){
+        mouse_press_x = mouse_x;
+        mouse_press_y = mouse_y;
+        mouse_map_offset_x = map_offset_x;
+        mouse_map_offset_y = map_offset_y;
+        grab=1;
+    }
 }
-if mouse_check_button(mb_left){
-    map_offset_x = mouse_map_offset_x + (mouse_x - mouse_press_x);
-    map_offset_y = mouse_map_offset_y + (mouse_y - mouse_press_y);
+if slider.grab=1{grab=0;}
+if grab=1{
+    if mouse_check_button(mb_left){
+        map_offset_x = mouse_map_offset_x + (mouse_x - mouse_press_x);
+        map_offset_y = mouse_map_offset_y + (mouse_y - mouse_press_y);
+    }
+}
+if mouse_check_button_released(mb_left){
+    grab=0;
 }
 if mouse_wheel_up(){
     if map_zoom_level=0{
@@ -97,6 +129,95 @@ if mouse_wheel_down(){
         map_offset_y += room_height*0.5 -  (room_height*0.5 - map_offset_y) * map_scale_lon[0]/map_scale_lon[1] - map_offset_y;
     }
 }
+
+//find the selected car
+if input1.text!=""{
+    var temp_id = real(input1.text);
+    //search the list for the id
+    var temp_i = ds_list_find_index(id_compiled_list,temp_id);
+    if temp_i{
+        sel_car_pos = temp_i;
+    }else{
+        sel_car_pos=-1;
+    }
+}
+if sel_car_pos&gt;=0{
+    //get the instance_ of the car
+    sel_car_instance = ds_list_find_value(car_instance_id_list,sel_car_pos);
+    if sel_car_instance{
+        if lst_sel_car!=sel_car_instance{
+            lst_sel_car.selected=0;//deselect the old car
+            sel_car_instance.selected=1;//select the new one
+            lst_sel_car = sel_car_instance;//remember the current selected car
+        }
+    }
+}
+
+
+//anylis heat map
+if hm_setup=0 &amp;&amp; ds_list_size(id_list)&gt;0{
+    hm_setup=1;
+    for(var i=0;i&lt;ds_list_size(id_list);i++){
+        var temp_lat = ds_list_find_value(lat_list,i);
+        var temp_lon = ds_list_find_value(lon_list,i);
+        var temp_x = lon_to_x(temp_lon);
+        var temp_y = lat_to_y(temp_lat);
+        var grid_x = floor((((temp_x-map_offset_x)-hm_x)/hm_res));
+        var grid_y = floor((((temp_y-map_offset_y)-hm_y)/hm_res));
+        var cell_value = ds_grid_get_safe(hm_grid,grid_x,grid_y);
+        if cell_value&gt;=0{
+            cell_value+=0.01;
+            ds_grid_set(hm_grid,grid_x,grid_y,cell_value);
+        }
+    }
+    
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="5" enumb="86">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>cal_2-=10;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="5" enumb="66">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>cal_2+=10;
 </string>
           </argument>
         </arguments>
@@ -120,35 +241,47 @@ if mouse_wheel_down(){
           <argument>
             <kind>1</kind>
             <string>//draw the map image
-//if ( sprite_exists(Google_Map) ){ draw_sprite( Google_Map , 0 , 0 , 0 ) }
 if map_zoom_level=0{
     draw_sprite(sprite0,0,map_offset_x,map_offset_y);
 }
 if map_zoom_level=1{
     draw_sprite(sprite1,0,map_offset_x,map_offset_y);
 }
+
+//draw the heat map
+draw_set_colour(c_red);
+if hm_on{
+    for(var i=0;i&lt;ds_grid_width(hm_grid);i++){
+        for(var j=0;j&lt;ds_grid_height(hm_grid);j++){
+            var temp_value = ds_grid_get(hm_grid,i,j);
+            draw_set_alpha(temp_value);
+            var temp_x = map_offset_x + hm_x + i*hm_res;
+            var temp_y = map_offset_y + hm_y + j*hm_res;
+            draw_rectangle(temp_x,temp_y,temp_x+hm_res,temp_y+hm_res,0);
+        }
+    }
+}
+draw_set_alpha(1);
+draw_set_color(c_black);
+if draw_button_simple(10,10,100,40,"Heat Map",c_lime){//button to turn the heat map on/off
+    hm_on=!hm_on;
+}
+
+
 //draw the gps data
-//
+/*
 for(var i=0;i&lt;ds_list_size(lat_list);i++){
-//for(var i=0;i&lt;5;i++){
-    //get the data for this point from the lists
-    //var temp_y = map_offset_y + (ds_list_find_value(lat_list,i) - map_center_lat) * map_scale_lat[map_zoom_level];
-    //var temp_x = map_offset_x + (ds_list_find_value(lon_list,i) - map_center_lon) * map_scale_lon[map_zoom_level];
-    map_x = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * cos(degtorad(map_center_lon+map_center_lon_offset)));
-    map_y = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * sin(degtorad(map_center_lon+map_center_lon_offset)));
-    //var temp_km = (r * cos(degtorad(ds_list_find_value(lat_list,i))) * cos(degtorad(ds_list_find_value(lon_list,i))) - map_x);
-    //var temp_x = ((r * cos(degtorad(ds_list_find_value(lat_list,i)-map_center_lat)) * cos(degtorad(ds_list_find_value(lon_list,i)-map_center_lon))) );
-    //var temp_y = ((r * cos(degtorad(ds_list_find_value(lat_list,i)-map_center_lat)) * sin(degtorad(ds_list_find_value(lon_list,i)-map_center_lon))));
-    //while(temp_x&gt;=r*0.5){temp_x-=r;}
-    //while(temp_x&lt;=-r*0.5){temp_x+=r;}
-    //while(temp_y&gt;=r*0.5){temp_y-=r;}
-    //while(temp_y&lt;=-r*0.5){temp_y+=r;}
+    //map_x = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * cos(degtorad(map_center_lon+map_center_lon_offset)));
+    //map_y = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * sin(degtorad(map_center_lon+map_center_lon_offset)));
+    //var temp_y = (r * (ds_list_find_value(lat_list,i) - map_center_lat) * pi/180);
+    //var temp_x = (r * (ds_list_find_value(lon_list,i) - map_center_lon) * pi/180 * cos(map_center_lat));
     //temp_x = map_offset_x + (temp_x * map_scale[map_zoom_level]);
-    //temp_y = map_offset_y + (temp_y * map_scale[map_zoom_level]);
-    var temp_y = r * (ds_list_find_value(lat_list,i) - map_center_lat) * pi/180;
-    var temp_x = r * (ds_list_find_value(lon_list,i) - map_center_lon) * pi/180 * cos(map_center_lat);
-    temp_x = map_offset_x + (temp_x * map_scale[map_zoom_level]);
-    temp_y = map_offset_y - (temp_y * map_scale[map_zoom_level]);
+    //temp_y = map_offset_y - (temp_y * map_scale[map_zoom_level]);
+    var temp_lat = ds_list_find_value(lat_list,i);
+    var temp_lon = ds_list_find_value(lon_list,i);
+    var temp_y = lat_to_y(ds_list_find_value(lat_list,i));
+    var temp_x = lon_to_x(ds_list_find_value(lon_list,i))
+    
     var temp_speed = ds_list_find_value(speed_list,i);
     var temp_direction = ds_list_find_value(direction_list,i);
     var temp_time = ds_list_find_value(time_list,i);
@@ -160,7 +293,7 @@ for(var i=0;i&lt;ds_list_size(lat_list);i++){
     if(temp_passenger == 0){
         draw_set_color(c_black);
     }else {
-        draw_set_color(c_yellow);
+        draw_set_color(c_blue);
     }
     draw_circle(temp_x,temp_y,3,0);
     draw_line_width(temp_x,temp_y,temp_x + temp_speed * a * cos(degtorad(temp_direction)),temp_y - temp_speed * a * sin(degtorad(temp_direction)),2);
@@ -168,8 +301,31 @@ for(var i=0;i&lt;ds_list_size(lat_list);i++){
 }
 
 //
-draw_text(10,10,"lat_scale= "+string(map_scale_lat));
-draw_text(10,30,"lon_scale= "+string(map_scale_lon));
+//draw_text(10,10,"lat_scale= "+string(map_scale_lat));
+//draw_text(10,30,"lon_scale= "+string(map_scale_lon));
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="9" enumb="88">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>cal_1-=0.1;
 </string>
           </argument>
         </arguments>
@@ -239,6 +395,29 @@ draw_text(10,30,"lon_scale= "+string(map_scale_lon));
           <argument>
             <kind>1</kind>
             <string>map_center_lat_offset+=0.001
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="9" enumb="67">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>cal_1+=0.1;
 </string>
           </argument>
         </arguments>
