@@ -59,12 +59,12 @@ grab=0;
 dis_time=0;
 max_dis_time=60;
 
-//selected car shit
+//selected car 
 sel_car_instance = -1;
 sel_car_pos = -1;
 lst_sel_car=-1;
 
-//heat map shit
+//heat map 
 hm_width_pixels = 4000;
 hm_height_pixels = 4000;
 hm_x = -1000;
@@ -115,23 +115,13 @@ if grab=1{
 if mouse_check_button_released(mb_left){
     grab=0;
 }
-if mouse_wheel_up(){
-    if map_zoom_level=0{
-        map_zoom_level=1;
-        map_offset_x -= (room_width*0.5 - map_offset_x) * map_scale_lat[1]/map_scale_lat[0];
-        map_offset_y -= (room_height*0.5 - map_offset_y) * map_scale_lon[1]/map_scale_lon[0];
-    }
-}
-if mouse_wheel_down(){
-    if map_zoom_level=1{
-        map_zoom_level=0;
-        map_offset_x += room_width*0.5 - (room_width*0.5 - map_offset_x) * map_scale_lat[0]/map_scale_lat[1] - map_offset_x;
-        map_offset_y += room_height*0.5 -  (room_height*0.5 - map_offset_y) * map_scale_lon[0]/map_scale_lon[1] - map_offset_y;
-    }
-}
 
 //find the selected car
 if input1.text!=""{
+    //incase the text changes to invalid selection
+    
+    sel_car_instance=-1
+    
     var temp_id = real(input1.text);
     //search the list for the id
     var temp_i = ds_list_find_index(id_compiled_list,temp_id);
@@ -139,6 +129,7 @@ if input1.text!=""{
         sel_car_pos = temp_i;
     }else{
         sel_car_pos=-1;
+        //lst_sel_car.selected=0;
     }
 }
 if sel_car_pos&gt;=0{
@@ -268,41 +259,6 @@ if draw_button_simple(10,10,100,40,"Heat Map",c_lime){//button to turn the heat 
 }
 
 
-//draw the gps data
-/*
-for(var i=0;i&lt;ds_list_size(lat_list);i++){
-    //map_x = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * cos(degtorad(map_center_lon+map_center_lon_offset)));
-    //map_y = (r * cos(degtorad(map_center_lat+map_center_lat_offset)) * sin(degtorad(map_center_lon+map_center_lon_offset)));
-    //var temp_y = (r * (ds_list_find_value(lat_list,i) - map_center_lat) * pi/180);
-    //var temp_x = (r * (ds_list_find_value(lon_list,i) - map_center_lon) * pi/180 * cos(map_center_lat));
-    //temp_x = map_offset_x + (temp_x * map_scale[map_zoom_level]);
-    //temp_y = map_offset_y - (temp_y * map_scale[map_zoom_level]);
-    var temp_lat = ds_list_find_value(lat_list,i);
-    var temp_lon = ds_list_find_value(lon_list,i);
-    var temp_y = lat_to_y(ds_list_find_value(lat_list,i));
-    var temp_x = lon_to_x(ds_list_find_value(lon_list,i))
-    
-    var temp_speed = ds_list_find_value(speed_list,i);
-    var temp_direction = ds_list_find_value(direction_list,i);
-    var temp_time = ds_list_find_value(time_list,i);
-    var temp_passenger = ds_list_find_value(passenger_list,i);
-    
-    //draw the 
-    var a = 0.1;
-    // draw if car has passengers or not
-    if(temp_passenger == 0){
-        draw_set_color(c_black);
-    }else {
-        draw_set_color(c_blue);
-    }
-    draw_circle(temp_x,temp_y,3,0);
-    draw_line_width(temp_x,temp_y,temp_x + temp_speed * a * cos(degtorad(temp_direction)),temp_y - temp_speed * a * sin(degtorad(temp_direction)),2);
-    //draw_text(temp_x+10,temp_y-10,string(ds_list_find_value(lat_list,i))+","+string(ds_list_find_value(lon_list,i)));
-}
-
-//
-//draw_text(10,10,"lat_scale= "+string(map_scale_lat));
-//draw_text(10,30,"lon_scale= "+string(map_scale_lon));
 </string>
           </argument>
         </arguments>
