@@ -119,9 +119,6 @@ if mouse_check_button_released(mb_left){
 //find the selected car
 if input1.text!=""{
     //incase the text changes to invalid selection
-    
-    sel_car_instance=-1
-    
     var temp_id = real(input1.text);
     //search the list for the id
     var temp_i = ds_list_find_index(id_compiled_list,temp_id);
@@ -132,16 +129,20 @@ if input1.text!=""{
         //lst_sel_car.selected=0;
     }
 }
-if sel_car_pos&gt;=0{
-    //get the instance_ of the car
-    sel_car_instance = ds_list_find_value(car_instance_id_list,sel_car_pos);
-    if sel_car_instance{
-        if lst_sel_car!=sel_car_instance{
-            lst_sel_car.selected=0;//deselect the old car
-            sel_car_instance.selected=1;//select the new one
-            lst_sel_car = sel_car_instance;//remember the current selected car
+if sel_car_pos!=lst_sel_car{
+    if sel_car_pos&gt;=0{
+        //get the instance_ of the car
+        sel_car_instance = ds_list_find_value(car_instance_id_list,sel_car_pos);
+        if sel_car_instance&gt;0{
+            if lst_sel_car!=sel_car_instance{
+                lst_sel_car.selected=0;//deselect the old car
+                sel_car_instance.selected=1;//select the new one
+            }
         }
+    }else{
+        lst_sel_car.selected=0;//deselect the old car
     }
+    lst_sel_car = sel_car_pos
 }
 
 

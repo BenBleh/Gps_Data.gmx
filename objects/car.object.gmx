@@ -148,10 +148,10 @@ if selected{
     draw_set_alpha(1);
     draw_set_color(c_white);
     draw_text(dx,dy,"Last time: "+string(data[use_data_point,0]));dy+=23;
-    draw_text(dx,dy,"Lat: "+string(data[use_data_point,1]));dy+=23;
-    draw_text(dx,dy,"Lon: "+string(data[use_data_point,2]));dy+=23;
+    draw_text(dx,dy,"Lat: "+string_format(data[use_data_point,1],2,5));dy+=23;
+    draw_text(dx,dy,"Lon: "+string_format(data[use_data_point,2],2,5));dy+=23;
     var passenger ="";
-    if string(data[use_data_point,3]) = 1{
+    if (data[use_data_point,3]) = 1{
         var passenger = "Yes";
         draw_text(dx,dy,"Passenger: "+string(passenger));dy+=23;    
     }else{
