@@ -3,7 +3,7 @@
   <name>Google Maps</name>
   <version>1.1.1</version>
   <packageID>com.Montiedragon.Maps</packageID>
-  <author></author>
+  <ProductID></ProductID>
   <date>02/11/14</date>
   <license>Free to use, also for commercial games.</license>
   <description></description>
@@ -17,7 +17,9 @@
   <androidsourcedir></androidsourcedir>
   <macsourcedir></macsourcedir>
   <maclinkerflags></maclinkerflags>
+  <maccompilerflags></maccompilerflags>
   <androidinject></androidinject>
+  <gradleinject></gradleinject>
   <iosSystemFrameworks/>
   <iosThirdPartyFrameworks/>
   <androidPermissions/>

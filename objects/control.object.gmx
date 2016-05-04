@@ -69,10 +69,12 @@ hm_width_pixels = 4000;
 hm_height_pixels = 4000;
 hm_x = -1000;
 hm_y = -1000;
-hm_res = 15;
+hm_res = 10;
 hm_setup=0;
 hm_grid=ds_grid_create(hm_width_pixels/hm_res,hm_height_pixels/hm_res);
 hm_on=0;
+hm_surf = surface_create(hm_width_pixels,hm_height_pixels);
+hm_redraw=1;
 </string>
           </argument>
         </arguments>
@@ -117,36 +119,36 @@ if mouse_check_button_released(mb_left){
 }
 
 //find the selected car
-if input1.text!=""{
-    //incase the text changes to invalid selection
-    var temp_id = real(input1.text);
-    //search the list for the id
-    var temp_i = ds_list_find_index(id_compiled_list,temp_id);
-    if temp_i{
-        sel_car_pos = temp_i;
-    }else{
-        sel_car_pos=-1;
-        //lst_sel_car.selected=0;
-    }
+//incase the text changes to invalid selection
+var temp_id = real(input1.text);
+//search the list for the id
+var temp_i = ds_list_find_index(id_compiled_list,temp_id);
+if temp_i&gt;=0{
+    sel_car_pos = temp_i;
+}else{
+    sel_car_pos=-1;
 }
 if sel_car_pos!=lst_sel_car{
     if sel_car_pos&gt;=0{
         //get the instance_ of the car
         sel_car_instance = ds_list_find_value(car_instance_id_list,sel_car_pos);
-        if sel_car_instance&gt;0{
+        if sel_car_instance&gt;0 &amp;&amp; instance_exists(sel_car_instance){
             if lst_sel_car!=sel_car_instance{
                 lst_sel_car.selected=0;//deselect the old car
                 sel_car_instance.selected=1;//select the new one
             }
         }
     }else{
-        lst_sel_car.selected=0;//deselect the old car
+        if instance_exists(sel_car_instance){
+            sel_car_instance.selected=0;//deselect the old car
+        }
+        sel_car_instance = -1;
     }
     lst_sel_car = sel_car_pos
 }
 
 
-//anylis heat map
+//anylise heat map
 if hm_setup=0 &amp;&amp; ds_list_size(id_list)&gt;0{
     hm_setup=1;
     for(var i=0;i&lt;ds_list_size(id_list);i++){
@@ -158,7 +160,7 @@ if hm_setup=0 &amp;&amp; ds_list_size(id_list)&gt;0{
         var grid_y = floor((((temp_y-map_offset_y)-hm_y)/hm_res));
         var cell_value = ds_grid_get_safe(hm_grid,grid_x,grid_y);
         if cell_value&gt;=0{
-            cell_value+=0.01;
+            cell_value+=0.01*(15/hm_res);
             ds_grid_set(hm_grid,grid_x,grid_y,cell_value);
         }
     }
@@ -240,26 +242,38 @@ if map_zoom_level=1{
     draw_sprite(sprite1,0,map_offset_x,map_offset_y);
 }
 
-//draw the heat map
-draw_set_colour(c_red);
-if hm_on{
+
+//see if the surface exists and create it if it doesnt
+if !surface_exists(hm_surf){
+    hm_surf = surface_create(hm_width_pixels,hm_height_pixels);
+    hm_redraw=1;
+}
+if hm_redraw{//draw to the surf only once
+    hm_redraw=0;
+    surface_set_target(hm_surf);
+    //draw the heat map
+    draw_set_colour(c_red);
     for(var i=0;i&lt;ds_grid_width(hm_grid);i++){
         for(var j=0;j&lt;ds_grid_height(hm_grid);j++){
             var temp_value = ds_grid_get(hm_grid,i,j);
             draw_set_alpha(temp_value);
-            var temp_x = map_offset_x + hm_x + i*hm_res;
-            var temp_y = map_offset_y + hm_y + j*hm_res;
+            var temp_x = i*hm_res;
+            var temp_y = j*hm_res;
             draw_rectangle(temp_x,temp_y,temp_x+hm_res,temp_y+hm_res,0);
         }
     }
+    surface_reset_target();
 }
+//button to turn the heat map on/off
 draw_set_alpha(1);
 draw_set_color(c_black);
 if draw_button_simple(10,10,100,40,"Heat Map",c_lime){//button to turn the heat map on/off
     hm_on=!hm_on;
 }
-
-
+if hm_on{
+    //draw the surface that has the heat map on it.
+    draw_surface(hm_surf,map_offset_x+hm_x,map_offset_y+hm_y);
+}
 </string>
           </argument>
         </arguments>
