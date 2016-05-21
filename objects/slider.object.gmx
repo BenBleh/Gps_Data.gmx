@@ -50,7 +50,8 @@
             <kind>1</kind>
             <string>//
 var i=0;
-var slider_x = (control.dis_time/control.max_dis_time)*200;
+var d=5;
+var slider_x = d+(control.dis_time/control.max_dis_time)*200;
 if mouse_y&lt;y+20 &amp;&amp; mouse_y&gt;=y{
     if mouse_x&gt;x+slider_x &amp;&amp; mouse_x&lt;x+slider_x+16{
         i=1;
@@ -64,9 +65,9 @@ if mouse_check_button_released(mb_left){
 }
 if grab=1{
     i=1;
-    var temp_time = ((mouse_x-x)/200)*control.max_dis_time;
+    var temp_time = ((mouse_x-x-d-6.5)/200)*control.max_dis_time;
     control.dis_time = clamp(temp_time,0,control.max_dis_time);
-    slider_x = (control.dis_time/control.max_dis_time)*200;
+    slider_x = d+(control.dis_time/control.max_dis_time)*200;
 }
 //
 //draw the bar
@@ -75,7 +76,16 @@ draw_sprite(sprite2,0,x,y);
 draw_sprite(sprite2,1+i,x+slider_x,y);
 //draw the number
 draw_set_color(c_black);
-draw_text(x+230,y+3,"12:00:"+string(control.dis_time));
+draw_text(x+80,y-18,"12:00:"+string(control.dis_time));
+//draw the slider buttons on the sides
+if draw_button_ext(x+220+35,y+10,sprite5,"",0,0,0,0){
+    control.dis_time+=1;
+    if control.dis_time&gt;60{control.dis_time=60;}
+}
+if draw_button_ext(x-35,y+10,sprite4,"",0,0,0,0){
+    control.dis_time-=1;
+    if control.dis_time&lt;0{control.dis_time=0;}
+}
 </string>
           </argument>
         </arguments>

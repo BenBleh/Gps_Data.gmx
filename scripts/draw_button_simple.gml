@@ -98,7 +98,7 @@ if mx>x1 && mx<x2 && my>y1 && my<y2{
 }
 var pressed = false;
 if hover{
-    if mouse_check_button(mb_left) && !control.menu_scrolled{
+    if mouse_check_button(mb_left){
         pressed = true;
     }
 }
@@ -125,7 +125,7 @@ if button_text!=""{
 //glass
 draw_sprite(button_sprite,3,dx,dy);
 //
-if hover && mouse_check_button_released(mb_left) && !control.menu_scrolled{
+if hover && mouse_check_button_released(mb_left){
     return 1;
 }
 return 0;

@@ -55,6 +55,17 @@ mouse_press_x = 0;
 mouse_press_y = 0;
 grab=0;
 
+//map control limits
+map_offset_limit_x[0,0]=128;
+map_offset_limit_x[0,1]=846;
+map_offset_limit_y[0,0]=385;
+map_offset_limit_y[0,1]=521;
+
+map_offset_limit_x[1,0]=139;
+map_offset_limit_x[1,1]=2061;
+map_offset_limit_y[1,0]=357;
+map_offset_limit_y[1,1]=2162;
+
 //time controls
 dis_time=0;
 max_dis_time=60;
@@ -117,6 +128,9 @@ if grab=1{
 if mouse_check_button_released(mb_left){
     grab=0;
 }
+//limit the map offset
+map_offset_x = clamp(map_offset_x,map_offset_limit_x[map_zoom_level,0],map_offset_limit_x[map_zoom_level,1]);
+map_offset_y = clamp(map_offset_y,map_offset_limit_y[map_zoom_level,0],map_offset_limit_y[map_zoom_level,1]);
 
 //find the selected car
 //incase the text changes to invalid selection
@@ -147,6 +161,20 @@ if sel_car_pos!=lst_sel_car{
     lst_sel_car = sel_car_pos
 }
 
+if mouse_wheel_up() or keyboard_check_pressed(ord("Z")){
+    if map_zoom_level=0{
+        map_zoom_level=1;
+        map_offset_x -= (room_width*0.5 - map_offset_x) * map_scale_lat[1]/map_scale_lat[0];
+        map_offset_y -= (room_height*0.5 - map_offset_y) * map_scale_lon[1]/map_scale_lon[0];
+    }
+}
+if mouse_wheel_down() or keyboard_check_pressed(ord("X")){
+    if map_zoom_level=1{
+        map_zoom_level=0;
+        map_offset_x += room_width*0.5 - (room_width*0.5 - map_offset_x) * map_scale_lat[0]/map_scale_lat[1] - map_offset_x;
+        map_offset_y += room_height*0.5 -  (room_height*0.5 - map_offset_y) * map_scale_lon[0]/map_scale_lon[1] - map_offset_y;
+    }
+}
 
 //anylise heat map
 if hm_setup=0 &amp;&amp; ds_list_size(id_list)&gt;0{
@@ -272,8 +300,11 @@ if draw_button_simple(10,10,100,40,"Heat Map",c_lime){//button to turn the heat 
 }
 if hm_on{
     //draw the surface that has the heat map on it.
-    draw_surface(hm_surf,map_offset_x+hm_x,map_offset_y+hm_y);
+    draw_surface_ext(hm_surf,map_offset_x+hm_x*control.map_scale[control.map_zoom_level]/10,map_offset_y+hm_y*control.map_scale[control.map_zoom_level]/10,control.map_scale[control.map_zoom_level]/10,control.map_scale[control.map_zoom_level]/10,0,-1,1);
 }
+
+//draw_text(10,100,map_offset_x);
+//draw_text(10,120,map_offset_y);
 </string>
           </argument>
         </arguments>
