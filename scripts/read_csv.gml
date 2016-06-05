@@ -32,7 +32,6 @@ if file_exists(fname){
         for(var i=0;i<string_length(temp_string);i++){
             var char = string_char_at(temp_string,i);
             if char==","{
-                //FIXME: all list need to be the same length, errors will happen if cells are missing in the csv.
                 if j==1{
                     last_id = real(cell_string);
                     var temp_car =-1;
@@ -80,6 +79,7 @@ if file_exists(fname){
 var time_string = argument0;
 
 //   "2010-06-01 00:00:41.077000000"
+// make time readable for user
 var j=0;
 var sec="";
 for(var i=0;i<string_length(time_string);i++){

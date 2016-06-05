@@ -42,7 +42,6 @@ r = 6371;
 cal_1=0.03;
 cal_2=200;
 
-//Google_Map = get_map( string(map_center_lat)+","+string(map_center_lon) , map_zoom , 640 , 640 , "roadmap" );
 //get gps data from csv file
 read_csv("sample.csv");
 
@@ -303,8 +302,7 @@ if hm_on{
     draw_surface_ext(hm_surf,map_offset_x+hm_x*control.map_scale[control.map_zoom_level]/10,map_offset_y+hm_y*control.map_scale[control.map_zoom_level]/10,control.map_scale[control.map_zoom_level]/10,control.map_scale[control.map_zoom_level]/10,0,-1,1);
 }
 
-//draw_text(10,100,map_offset_x);
-//draw_text(10,120,map_offset_y);
+
 </string>
           </argument>
         </arguments>
